@@ -9,6 +9,7 @@ from app.models.climate_log import ClimateLog
 from app.models.flush_harvest import FlushHarvest
 from app.models.room import Room
 from app.models.shed import Shed
+from app.moisture import MoistureConflict, moisture_kg_for_harvest
 from app.schemas.dashboard import DashboardStatsSchema
 
 bp = Blueprint("dashboard", __name__, url_prefix="/api/dashboard")
@@ -32,12 +33,18 @@ def get_stats():
             .scalar()
             or 0
         )
-        harvest_kg_last_7d = (
-            db.query(func.coalesce(func.sum(FlushHarvest.weight_kg), 0.0))
+        # 近 7 日扣水后公斤:与采收列表/单条共用同一展示公式,无法扣水的行不计入
+        recent_harvests = (
+            db.query(FlushHarvest)
             .filter(FlushHarvest.harvested_at >= now - timedelta(days=7))
-            .scalar()
-            or 0.0
+            .all()
         )
+        harvest_kg_last_7d = 0.0
+        for h in recent_harvests:
+            try:
+                harvest_kg_last_7d += moisture_kg_for_harvest(db, h)
+            except MoistureConflict:
+                continue
         payload = {
             "shed_total": shed_total,
             "fruiting_room_count": fruiting_room_count,

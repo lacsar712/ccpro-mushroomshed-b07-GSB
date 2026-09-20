@@ -75,7 +75,7 @@ export default function FlushHarvests() {
     <div>
       <header class="page-header">
         <h1>采收记录</h1>
-        <p class="muted">潮次、等级与重量；weightKg 须 &gt; 0</p>
+        <p class="muted">潮次、等级与重量；weightKg 为称重原值，扣水后公斤由后端按湿度计算</p>
       </header>
       {error() && <div class="error">{error()}</div>}
 
@@ -159,7 +159,8 @@ export default function FlushHarvests() {
               <th>室 ID</th>
               <th>时间</th>
               <th>潮次</th>
-              <th>重量</th>
+              <th>称重 (kg)</th>
+              <th>扣水后 (kg)</th>
               <th>等级</th>
               <th>操作人</th>
               <th />
@@ -173,7 +174,8 @@ export default function FlushHarvests() {
                   <td>{r.roomId}</td>
                   <td>{new Date(r.harvestedAt).toLocaleString()}</td>
                   <td>{r.flushNo}</td>
-                  <td>{r.weightKg}</td>
+                  <td>{r.weightKg.toFixed(2)}</td>
+                  <td>{r.moistureKg.toFixed(2)}</td>
                   <td>
                     <span class={`badge grade-${r.grade.toLowerCase()}`}>{r.grade}</span>
                   </td>

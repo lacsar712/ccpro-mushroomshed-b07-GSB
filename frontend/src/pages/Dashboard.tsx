@@ -33,7 +33,7 @@ export default function Dashboard() {
           <div class="stat-value">{stats()?.climateLast24h ?? '—'}</div>
         </div>
         <div class="stat-card warn">
-          <div class="stat-label">近 7 日采收总量 (kg)</div>
+          <div class="stat-label">近 7 日采收 (扣水后 kg)</div>
           <div class="stat-value">
             {stats() ? stats()!.harvestKgLast7d.toFixed(2) : '—'}
           </div>

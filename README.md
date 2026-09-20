@@ -46,10 +46,18 @@ docker compose up --build
 2. **Shed 菇房**：`name`、`location`、`notes`
 3. **Room 出菇室**：`shedId`、`roomCode`、`species`、`capacityBags`、`status(fruiting|idle|sanitize)`；同菇房 `roomCode` 唯一
 4. **ClimateLog 环境记录**：`roomId`、`recordedAt`、`tempC`、`humidityPct`、`co2Ppm`、`notes`；`humidityPct ∈ [1,100]`，否则 **400**
-5. **FlushHarvest 采收**：`roomId`、`harvestedAt`、`flushNo(≥1)`、`weightKg`、`grade(A|B|C)`、`operatorName`；`weightKg > 0`，否则 **400**
-6. **Dashboard**：`shedTotal`、`fruitingRoomCount`、`climateLast24h`、`harvestKgLast7d`
+5. **FlushHarvest 采收**：`roomId`、`harvestedAt`、`flushNo(≥1)`、`weightKg`、`grade(A|B|C)`、`operatorName`；`weightKg > 0`，否则 **400**。`weightKg` 永远保存称重原值，接口另返回扣水后的展示公斤 `moistureKg`（见下节）
+6. **Dashboard**：`shedTotal`、`fruitingRoomCount`、`climateLast24h`、`harvestKgLast7d`（近 7 日 `moistureKg` 合计）
 
-各实体 API：`GET/POST` 列表与创建、`DELETE` 按 ID 删除。
+各实体 API：`GET/POST` 列表与创建、`DELETE` 按 ID 删除；采收与环境记录另支持 `GET/PUT` 按 ID。
+
+## 扣水规则（moistureKg）
+
+- 每条采收取**同室**、`recordedAt ≤ harvestedAt` 且间隔 **≤ 180 分钟**的最近一条 ClimateLog。
+- 该记录 `humidityPct ≥ 92`：`moistureKg = weightKg × 0.96`；`85 ≤ humidityPct < 92`：`moistureKg = weightKg`（不扣）。
+- 窗口内无环境记录：**409**，正文带 `roomId`；`humidityPct < 85`：**409**，正文带 `climateLogId`。列表与 Dashboard 合计中此类采收行不出现。
+- 公式只在后端 `app/moisture.py` 的 `moisture_kg_for_harvest` 实现，采收列表、采收单条、Dashboard 七日公斤三处共用；前端只并排展示 `weightKg` 与 `moistureKg`，不在浏览器里乘系数。
+- 修改采收（`PUT /api/flush-harvests/<id>`）会重算，无法扣水则 **409** 且整单不保存；修改环境记录时刻（`PUT /api/climate-logs/<id>`）若把已挂潮次挤出 180 分钟窗口，整单回滚并 **409**，正文 `harvestId` 列出受影响采收。
 
 ## 前端页面
 

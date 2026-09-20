@@ -77,27 +77,29 @@ def seed() -> None:
             db.flush()
 
             now = datetime.now(timezone.utc)
+            # 环境记录与采收一一对应(间隔 60 分钟,均在 180 分钟窗口内):
+            # 93% → 扣水 ×0.96;88% / 85% → 不扣,moistureKg = weightKg
             db.add_all(
                 [
                     ClimateLog(
                         room_id=r1.id,
-                        recorded_at=now - timedelta(hours=2),
+                        recorded_at=now - timedelta(hours=9),
+                        temp_c=18.9,
+                        humidity_pct=93,
+                        co2_ppm=910.0,
+                        notes="高湿出菇,采收需扣水",
+                    ),
+                    ClimateLog(
+                        room_id=r1.id,
+                        recorded_at=now - timedelta(hours=3),
                         temp_c=18.5,
                         humidity_pct=88,
                         co2_ppm=950.0,
                         notes="晨检正常",
                     ),
                     ClimateLog(
-                        room_id=r1.id,
-                        recorded_at=now - timedelta(hours=8),
-                        temp_c=17.8,
-                        humidity_pct=90,
-                        co2_ppm=880.0,
-                        notes=None,
-                    ),
-                    ClimateLog(
                         room_id=r3.id,
-                        recorded_at=now - timedelta(hours=4),
+                        recorded_at=now - timedelta(hours=5),
                         temp_c=16.2,
                         humidity_pct=85,
                         co2_ppm=720.0,
@@ -105,15 +107,15 @@ def seed() -> None:
                     ),
                     ClimateLog(
                         room_id=r3.id,
-                        recorded_at=now - timedelta(hours=12),
+                        recorded_at=now - timedelta(hours=13),
                         temp_c=15.9,
-                        humidity_pct=87,
+                        humidity_pct=90,
                         co2_ppm=690.0,
                         notes=None,
                     ),
                     FlushHarvest(
                         room_id=r1.id,
-                        harvested_at=now - timedelta(hours=6),
+                        harvested_at=now - timedelta(hours=8),
                         flush_no=2,
                         weight_kg=42.5,
                         grade="A",
@@ -121,15 +123,15 @@ def seed() -> None:
                     ),
                     FlushHarvest(
                         room_id=r1.id,
-                        harvested_at=now - timedelta(days=1),
-                        flush_no=1,
+                        harvested_at=now - timedelta(hours=2),
+                        flush_no=3,
                         weight_kg=38.0,
                         grade="B",
                         operator_name="场长",
                     ),
                     FlushHarvest(
                         room_id=r3.id,
-                        harvested_at=now - timedelta(days=3),
+                        harvested_at=now - timedelta(hours=4),
                         flush_no=1,
                         weight_kg=55.2,
                         grade="A",

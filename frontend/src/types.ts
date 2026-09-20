@@ -33,6 +33,7 @@ export interface FlushHarvest {
   harvestedAt: string
   flushNo: number
   weightKg: number
+  moistureKg: number
   grade: HarvestGrade
   operatorName: string
 }
