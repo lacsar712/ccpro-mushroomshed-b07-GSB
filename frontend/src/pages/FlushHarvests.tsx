@@ -20,6 +20,10 @@ const empty = {
   operatorName: '',
 }
 
+function formatKg(n: number) {
+  return n.toFixed(2)
+}
+
 export default function FlushHarvests() {
   const [rows, setRows] = createSignal<FlushHarvest[]>([])
   const [rooms, setRooms] = createSignal<Room[]>([])
@@ -75,7 +79,7 @@ export default function FlushHarvests() {
     <div>
       <header class="page-header">
         <h1>采收记录</h1>
-        <p class="muted">潮次、等级与重量；weightKg 须 &gt; 0</p>
+        <p class="muted">潮次、等级与称重重量；weightKg 须 &gt; 0；扣水后公斤按环境湿度由后端计算</p>
       </header>
       {error() && <div class="error">{error()}</div>}
 
@@ -159,7 +163,8 @@ export default function FlushHarvests() {
               <th>室 ID</th>
               <th>时间</th>
               <th>潮次</th>
-              <th>重量</th>
+              <th>原重量 (kg)</th>
+              <th>扣水后 (kg)</th>
               <th>等级</th>
               <th>操作人</th>
               <th />
@@ -173,7 +178,8 @@ export default function FlushHarvests() {
                   <td>{r.roomId}</td>
                   <td>{new Date(r.harvestedAt).toLocaleString()}</td>
                   <td>{r.flushNo}</td>
-                  <td>{r.weightKg}</td>
+                  <td>{formatKg(r.weightKg)}</td>
+                  <td>{formatKg(r.moistureKg)}</td>
                   <td>
                     <span class={`badge grade-${r.grade.toLowerCase()}`}>{r.grade}</span>
                   </td>

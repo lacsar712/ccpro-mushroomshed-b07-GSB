@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required
 from sqlalchemy import func
 
 from app.database import SessionLocal
+from app import harvest_service
 from app.models.climate_log import ClimateLog
 from app.models.flush_harvest import FlushHarvest
 from app.models.room import Room
@@ -32,17 +33,18 @@ def get_stats():
             .scalar()
             or 0
         )
-        harvest_kg_last_7d = (
-            db.query(func.coalesce(func.sum(FlushHarvest.weight_kg), 0.0))
+        harvests_last_7d = (
+            db.query(FlushHarvest)
             .filter(FlushHarvest.harvested_at >= now - timedelta(days=7))
-            .scalar()
-            or 0.0
+            .all()
         )
+        # 七日公斤 = 扣水公斤，统一走 harvest_service，不在此处另写乘法
+        moisture_kg_last_7d = harvest_service.moisture_kg_sum(db, harvests_last_7d)
         payload = {
             "shed_total": shed_total,
             "fruiting_room_count": fruiting_room_count,
             "climate_last_24h": climate_last_24h,
-            "harvest_kg_last_7d": float(harvest_kg_last_7d),
+            "moisture_kg_last_7d": moisture_kg_last_7d,
         }
         return jsonify(stats_schema.dump(payload))
     finally:

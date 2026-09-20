@@ -46,10 +46,19 @@ docker compose up --build
 2. **Shed 菇房**：`name`、`location`、`notes`
 3. **Room 出菇室**：`shedId`、`roomCode`、`species`、`capacityBags`、`status(fruiting|idle|sanitize)`；同菇房 `roomCode` 唯一
 4. **ClimateLog 环境记录**：`roomId`、`recordedAt`、`tempC`、`humidityPct`、`co2Ppm`、`notes`；`humidityPct ∈ [1,100]`，否则 **400**
+   - 修改环境记录（`PUT /api/climate-logs/{id}`）后，会对原先挂在该记录上的潮次按同一公式重算；若改动时刻把某潮次挤出 180 分钟窗口（或湿度变低致其不合格），**整单回滚 409**，正文列出 `harvestIds`。
 5. **FlushHarvest 采收**：`roomId`、`harvestedAt`、`flushNo(≥1)`、`weightKg`、`grade(A|B|C)`、`operatorName`；`weightKg > 0`，否则 **400**
-6. **Dashboard**：`shedTotal`、`fruitingRoomCount`、`climateLast24h`、`harvestKgLast7d`
+   - `weightKg` 是**称重原值（库存口径）**，永不被覆盖；输出额外带扣水后公斤 **`moistureKg`**。
+   - 扣水规则（取同室 `recordedAt ≤ harvestedAt` 且间隔 **≤ 180 分钟** 的最近一条 ClimateLog）：
+     - 找不到环境记录 → **409**，正文带 `roomId`，该采收行不得出现（新增/修改时整行回滚）。
+     - `humidityPct ≥ 92` → `moistureKg = weightKg × 0.96`（扣水系数 **0.96**）。
+     - `85 ≤ humidityPct < 92`（含 85、不含 92）→ `moistureKg = weightKg`（不扣水）。
+     - `humidityPct < 85` → **409**，正文带 `climateLogId`。
+   - 采收列表、采收单条、Dashboard 七日公斤三处共用 `app/harvest_service.py` 同一函数，前端只展示、不在浏览器里相乘。
+   - 修改采收（`PUT /api/flush-harvests/{id}`）按新值重算扣水。
+6. **Dashboard**：`shedTotal`、`fruitingRoomCount`、`climateLast24h`、`moistureKgLast7d`（近 7 日**扣水后**公斤合计）
 
-各实体 API：`GET/POST` 列表与创建、`DELETE` 按 ID 删除。
+各实体 API：`GET/POST` 列表与创建、`GET/PUT/DELETE` 单条读取/修改/删除（Dashboard 仅 `GET /stats`）。
 
 ## 前端页面
 

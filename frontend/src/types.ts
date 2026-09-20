@@ -32,7 +32,10 @@ export interface FlushHarvest {
   roomId: number
   harvestedAt: string
   flushNo: number
+  /** 称重原值，库存口径，不被扣水覆盖 */
   weightKg: number
+  /** 扣水后公斤，由后端按湿度公式计算，浏览器不得自行相乘 */
+  moistureKg: number
   grade: HarvestGrade
   operatorName: string
 }
@@ -41,5 +44,5 @@ export interface DashboardStats {
   shedTotal: number
   fruitingRoomCount: number
   climateLast24h: number
-  harvestKgLast7d: number
+  moistureKgLast7d: number
 }

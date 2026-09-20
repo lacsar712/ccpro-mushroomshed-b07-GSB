@@ -16,7 +16,7 @@ export default function Dashboard() {
     <div>
       <header class="page-header">
         <h1>运行看板</h1>
-        <p class="muted">出菇室状态 · 近 24h 环境 · 近 7 日采收</p>
+        <p class="muted">出菇室状态 · 近 24h 环境 · 近 7 日扣水后采收</p>
       </header>
       {error() && <div class="error">{error()}</div>}
       <div class="stat-grid">
@@ -33,9 +33,9 @@ export default function Dashboard() {
           <div class="stat-value">{stats()?.climateLast24h ?? '—'}</div>
         </div>
         <div class="stat-card warn">
-          <div class="stat-label">近 7 日采收总量 (kg)</div>
+          <div class="stat-label">近 7 日扣水后采收 (kg)</div>
           <div class="stat-value">
-            {stats() ? stats()!.harvestKgLast7d.toFixed(2) : '—'}
+            {stats() ? stats()!.moistureKgLast7d.toFixed(2) : '—'}
           </div>
         </div>
       </div>

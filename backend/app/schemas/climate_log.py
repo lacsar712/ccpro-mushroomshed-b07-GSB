@@ -14,6 +14,11 @@ class ClimateLogCreateSchema(Schema):
     notes = fields.Str(allow_none=True)
 
 
+# 改环境记录与新增字段一致：改 recordedAt 后会重新校验 180 分钟窗口内的潮次
+class ClimateLogUpdateSchema(ClimateLogCreateSchema):
+    pass
+
+
 class ClimateLogOutSchema(Schema):
     id = fields.Int(dump_only=True)
     room_id = fields.Int(data_key="roomId")

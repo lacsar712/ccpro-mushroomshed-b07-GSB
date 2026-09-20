@@ -79,6 +79,7 @@ def seed() -> None:
             now = datetime.now(timezone.utc)
             db.add_all(
                 [
+                    # r1：近 2h 一条日常记录（晚于采收，不参与扣水匹配）
                     ClimateLog(
                         room_id=r1.id,
                         recorded_at=now - timedelta(hours=2),
@@ -87,14 +88,25 @@ def seed() -> None:
                         co2_ppm=950.0,
                         notes="晨检正常",
                     ),
+                    # r1：H1（now-6h）前 1h、湿度 92 → moistureKg = 42.5 * 0.96
                     ClimateLog(
                         room_id=r1.id,
-                        recorded_at=now - timedelta(hours=8),
-                        temp_c=17.8,
-                        humidity_pct=90,
-                        co2_ppm=880.0,
+                        recorded_at=now - timedelta(hours=7),
+                        temp_c=17.6,
+                        humidity_pct=92,
+                        co2_ppm=900.0,
                         notes=None,
                     ),
+                    # r1：H2（now-1d）前 1h、湿度 88（85..91）→ moistureKg = 38.0 不扣
+                    ClimateLog(
+                        room_id=r1.id,
+                        recorded_at=now - timedelta(hours=25),
+                        temp_c=17.2,
+                        humidity_pct=88,
+                        co2_ppm=870.0,
+                        notes=None,
+                    ),
+                    # r3：近 4h 一条日常记录
                     ClimateLog(
                         room_id=r3.id,
                         recorded_at=now - timedelta(hours=4),
@@ -103,11 +115,12 @@ def seed() -> None:
                         co2_ppm=720.0,
                         notes="CO2 略偏高",
                     ),
+                    # r3：H3（now-3d）前 2h、湿度 90（85..91）→ moistureKg = 55.2 不扣
                     ClimateLog(
                         room_id=r3.id,
-                        recorded_at=now - timedelta(hours=12),
+                        recorded_at=now - timedelta(days=3, hours=2),
                         temp_c=15.9,
-                        humidity_pct=87,
+                        humidity_pct=90,
                         co2_ppm=690.0,
                         notes=None,
                     ),

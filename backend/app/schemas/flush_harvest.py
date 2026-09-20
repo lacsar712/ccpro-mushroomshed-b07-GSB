@@ -14,11 +14,17 @@ class FlushHarvestCreateSchema(Schema):
     operator_name = fields.Str(required=True, data_key="operatorName", validate=validate.Length(min=1, max=64))
 
 
+# 改采收与新增字段一致：改完按新值重算扣水
+class FlushHarvestUpdateSchema(FlushHarvestCreateSchema):
+    pass
+
+
 class FlushHarvestOutSchema(Schema):
     id = fields.Int(dump_only=True)
     room_id = fields.Int(data_key="roomId")
     harvested_at = fields.DateTime(data_key="harvestedAt")
     flush_no = fields.Int(data_key="flushNo")
     weight_kg = fields.Float(data_key="weightKg")
+    moisture_kg = fields.Float(data_key="moistureKg")
     grade = fields.Str()
     operator_name = fields.Str(data_key="operatorName")
